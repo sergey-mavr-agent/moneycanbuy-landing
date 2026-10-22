@@ -1,4 +1,4 @@
-// moneycanbuy.fun teaser: sound on by default, autoplay fallback, keeps playing while scrolling.
+// moneycanbuy.fun landing: sound on by default, autoplay fallback, keeps playing while scrolling.
 (function () {
   "use strict";
   var video = document.getElementById("promo");
@@ -53,167 +53,126 @@
   tryPlay();
 })();
 
-// Dare calculator: every number below follows contracts/src/{VaultParams.sol,desks/Desk.sol,
-// desks/DisputeDesk.sol} in this repository (one disputer, no swarm appeal, no contributor bonus
-// — the same simplified path the page always showed).
+// Dare calculator: bonds, fee and splits as in the deployed TaskVault / desks (see docs: Fees & money flows).
+// Simplified path: one disputer, NFT vote decides, no swarm appeal, doer without a $YOLO stake.
 (function () {
   "use strict";
   var stage = document.getElementById("calc-stage");
   if (!stage) return;
 
-  var PRICE = 7.65; // example IMD price, same constant used across the page
   var BPS = 10000;
-  // VaultParams.sol LaunchParams.initial(): the live protocol numbers, compiled in at launch.
   var P = {
-    doerBondBps: 300, bondBase: 0.5, minBond: 1, disputeBondBps: 100,
-    feeBps: 1000, nftFeeBps: 600, winnerBondBps: 5000,
-    minRewardUsd: 5, minRewardImd: 0.5, largeRewardUsd: 300, largeRewardImd: 40,
-    authorFeeEth: 0.0005, // TaskVault.sol minAuthorFee: flat, non-refundable, to the treasury
-    swarmCheckFeeImd: 0.5 // example live Intake.priceOf() price the doer prepays for a large task's mandatory check
+    imdBase: 0.5, doerBondBps: 300, disputeBondBps: 100, // bond = 0.5 IMD + 3% / 1% of the author's reward, in the reward currency
+    feeBps: 1000, nftBps: 500, winnerBondBps: 5000       // fee 10% on payout; 5% of it to correct NFT votes; loser's bond 50/50
   };
-  var ORDER = ["author", "doer", "contract", "disputer", "nft", "swarm", "treasury"];
+  var PRICE = { USDC: 1, ETH: 2400, IMD: 5.5, YOLO: 0.001 }; // example $ prices for the slider only
+  var MIN = { USDC: 5, ETH: 0.002, IMD: 1, YOLO: 1000 };      // minimum reward per currency
+  var ORDER = ["author", "doer", "contract", "disputer", "nft", "treasury"];
 
-  function bondFor(rewardImd, bps) { // Desk.sol _bondFor: max(minBond, bondBase + bps * R / BPS)
-    return Math.max(P.minBond, P.bondBase + rewardImd * bps / BPS);
+  function trim(x, d) { return String(Number(x.toFixed(d))); }
+  function units(x, cur) {
+    if (cur === "ETH") return trim(x, 5) + " ETH";
+    if (cur === "YOLO") return Math.round(x).toLocaleString("en-US") + " YOLO";
+    return trim(x, 2) + " " + cur;
   }
-  function round2(x) { return Math.round(x * 100) / 100; }
-  function fmt(x) { return String(round2(x)); }
-  function fmtImd(x) { return fmt(x) + " IMD"; }
-  function fmtImdUsd(x) { return fmtImd(x) + " (~$" + fmt(x * PRICE) + ")"; } // receipts only: every IMD sum gets its $ estimate
-  function fmtEth(x) { return x.toFixed(4) + " ETH"; }
-  function fmtCur(usd, currency) { return currency === "IMD" ? fmtImd(usd / PRICE) : "$" + fmt(usd); }
-  function minUsdFor(currency) { return currency === "IMD" ? round2(P.minRewardImd * PRICE) : P.minRewardUsd; }
+  function usdOf(x, cur) { return x * PRICE[cur]; }
+  function withUsd(x, cur) { return cur === "USDC" ? units(x, cur) : units(x, cur) + " (~$" + trim(usdOf(x, cur), 2) + ")"; }
+  function bond(imd, cur, x) { // two parts: IMD + reward currency; one sum when the reward itself is IMD
+    if (cur === "IMD") return units(imd + x, "IMD");
+    return units(imd, "IMD") + " + " + units(x, cur);
+  }
 
-  function calc(usd, currency, scenario) {
-    var rewardImd = usd / PRICE;
-    var doerBond = bondFor(rewardImd, P.doerBondBps); // Desk.sol:118,130 doerBondBps, n=0 (no rejects/queue)
-    var disputeBond = bondFor(rewardImd, P.disputeBondBps); // Desk.sol:118 disputeBondBps
-    var fee = usd * P.feeBps / BPS; // DisputeDesk.sol:559 _payReward
-    var largeThresholdUsd = currency === "IMD" ? P.largeRewardImd * PRICE : P.largeRewardUsd; // VaultParams.sol largeRewardUsd/largeRewardImd
-    var large = usd >= largeThresholdUsd;
+  function calc(usd, cur, scenario) {
+    var R = usd / PRICE[cur];
     var r = {
-      usd: usd, currency: currency, rewardImd: rewardImd, doerBond: doerBond, disputeBond: disputeBond, fee: fee,
-      large: large,
-      checkFeeImd: large ? P.swarmCheckFeeImd : 0, // CaseDesk.sol submit(): doer prepays this, forfeited either way
-      authorFeeEth: P.authorFeeEth, // TaskVault.sol create(): paid once at posting, regardless of scenario
-      flooredDoer: P.bondBase + rewardImd * P.doerBondBps / BPS < P.minBond
+      cur: cur, R: R,
+      doerImd: P.imdBase, doerCur: R * P.doerBondBps / BPS,
+      dispImd: P.imdBase, dispCur: R * P.disputeBondBps / BPS,
+      fee: R * P.feeBps / BPS
     };
+    r.toDoer = R - r.fee;
     if (scenario === "none") {
-      r.doerUsd = usd - fee;
-      r.treasuryUsd = fee;
-      r.doerBondBack = doerBond;
+      r.toTreasury = r.fee;
     } else if (scenario === "doerwin") {
-      var toVoters = usd * P.nftFeeBps / BPS; // DisputeDesk.sol:560
-      var penalty = disputeBond; // DisputeDesk.sol:529-534 _settleDecided, doerWins branch
-      var votersBondCut = penalty * (1 - P.winnerBondBps / BPS);
-      var winnerShare = penalty - votersBondCut;
-      r.doerUsd = usd - fee;
-      r.doerBondTotal = doerBond + winnerShare;
-      r.winnerShare = winnerShare; // Doer's cut of the disputer's forfeited bond (half, winnerBondBps=5000)
-      r.toVotersUsd = toVoters;
-      r.votersBondCut = votersBondCut;
-      r.treasuryUsd = fee - toVoters;
-      r.disputerLostBond = disputeBond;
-    } else { // fake: _payReward never runs (doerWins = false, DisputeDesk.sol:345)
-      var penalty2 = doerBond;
-      var votersBondCut2 = penalty2 * (1 - P.winnerBondBps / BPS);
-      var disputerReward = penalty2 - votersBondCut2;
-      r.rewardStaysUsd = usd;
-      r.doerLostBond = doerBond;
-      r.disputerTotalBond = disputeBond + disputerReward;
-      r.disputerReward = disputerReward; // Disputer's cut of the doer's forfeited bond (half, winnerBondBps=5000)
-      r.votersBondCut = votersBondCut2;
+      r.toNft = R * P.nftBps / BPS;
+      r.toTreasury = r.fee - r.toNft;
+      r.winImd = r.dispImd * P.winnerBondBps / BPS; r.winCur = r.dispCur * P.winnerBondBps / BPS; // half the disputer's bond to the doer
+      r.nftImd = r.dispImd - r.winImd; r.nftCur = r.dispCur - r.winCur;                         // other half to the correct NFT votes
+    } else { // fake: no payout, no fee
+      r.winImd = r.doerImd * P.winnerBondBps / BPS; r.winCur = r.doerCur * P.winnerBondBps / BPS; // half the doer's bond to the disputer
+      r.nftImd = r.doerImd - r.winImd; r.nftCur = r.doerCur - r.winCur;
     }
     return r;
   }
 
-  function buildSteps(scenario, large) {
+  function buildSteps(scenario) {
     var s = [
       { text: "Author locks the reward", from: "author", to: "contract", chip: "reward" },
-      { text: "Doer takes it, posts bond", from: "doer", to: "contract", chip: "bond" },
-      { text: "Doer submits proof", from: null, to: "doer", chip: null }
+      { text: "Doer submits proof + bond", from: "doer", to: "contract", chip: "doerBond" }
     ];
-    if (large) s.push({ text: "Swarm checks the big dare", from: "doer", to: "swarm", chip: "check" });
     if (scenario === "none") {
-      s.push({ text: "24h window — nobody disputes", from: null, to: "contract", chip: null });
-      s.push({ text: "Doer paid 90% of the reward", from: "contract", to: "doer", chip: "doerUsd" });
-      s.push({ text: "Treasury keeps the 10% fee", from: "contract", to: "treasury", chip: "treasuryUsd" });
-      s.push({ text: "Doer's bond comes back", from: "contract", to: "doer", chip: "doerBondBack" });
+      s.push({ text: "24 h, nobody disputes", from: null, to: "contract", chip: null });
+      s.push({ text: "Doer paid 90% of the reward", from: "contract", to: "doer", chip: "toDoer" });
+      s.push({ text: "10% fee to the treasury", from: "contract", to: "treasury", chip: "toTreasury" });
+      s.push({ text: "Doer's bond comes back", from: "contract", to: "doer", chip: "doerBond" });
     } else if (scenario === "doerwin") {
-      s.push({ text: "Disputer bonds, challenges proof", from: "disputer", to: "contract", chip: "disputeBond" });
+      s.push({ text: "Disputer bonds, challenges the proof", from: "disputer", to: "contract", chip: "dispBond" });
       s.push({ text: "NFT holders vote: doer right", from: null, to: "nft", chip: null });
-      s.push({ text: "Doer paid 90%, NFT cut 6%", from: "contract", to: "doer", chip: "doerUsd" });
-      s.push({ text: "Doer's bond back + wins half", from: "contract", to: "doer", chip: "doerWinTotal" });
-      s.push({ text: "NFT voters split the other half", from: "contract", to: "nft", chip: "nftBondOnly" });
+      s.push({ text: "Doer paid 90% of the reward", from: "contract", to: "doer", chip: "toDoer" });
+      s.push({ text: "5% to the NFT voters", from: "contract", to: "nft", chip: "toNft" });
+      s.push({ text: "5% to the treasury", from: "contract", to: "treasury", chip: "toTreasury" });
+      s.push({ text: "Doer: bond back + half the disputer's", from: "contract", to: "doer", chip: "winBond" });
+      s.push({ text: "NFT voters: the other half", from: "contract", to: "nft", chip: "nftBond" });
     } else {
-      s.push({ text: "Disputer bonds, challenges proof", from: "disputer", to: "contract", chip: "disputeBond" });
-      s.push({ text: "NFT holders vote: fake caught", from: null, to: "nft", chip: null });
-      s.push({ text: "Reward stays in Contract, dare reopens", from: "contract", to: "contract", chip: "stay" });
-      s.push({ text: "Disputer's bond back + wins half", from: "contract", to: "disputer", chip: "disputerWinTotal" });
-      s.push({ text: "NFT voters split the other half", from: "contract", to: "nft", chip: "nftBondOnly" });
+      s.push({ text: "Disputer bonds, challenges the proof", from: "disputer", to: "contract", chip: "dispBond" });
+      s.push({ text: "NFT holders vote: fake", from: null, to: "nft", chip: null });
+      s.push({ text: "Reward stays, the dare stays open", from: "contract", to: "contract", chip: "stay" });
+      s.push({ text: "Disputer: bond back + half the doer's", from: "contract", to: "disputer", chip: "winBond" });
+      s.push({ text: "NFT voters: the other half", from: "contract", to: "nft", chip: "nftBond" });
     }
     return s;
   }
 
   function chipText(key, r) {
+    var c = r.cur;
     switch (key) {
-      case "reward": return fmtCur(r.usd, r.currency);
-      case "bond": return fmtImd(r.doerBond);
-      case "check": return fmtImd(r.checkFeeImd);
-      case "disputeBond": return fmtImd(r.disputeBond);
-      case "doerUsd": return fmtCur(r.doerUsd, r.currency);
-      case "treasuryUsd": return fmtCur(r.treasuryUsd, r.currency);
-      case "doerBondBack": return fmtImd(r.doerBondBack);
-      case "doerWinTotal": return fmtImd(r.doerBondTotal);
-      case "nftBondOnly": return fmtImd(r.votersBondCut);
-      case "stay": return "reopened";
-      case "disputerWinTotal": return fmtImd(r.disputerTotalBond);
+      case "reward": return units(r.R, c);
+      case "doerBond": return bond(r.doerImd, c, r.doerCur);
+      case "dispBond": return bond(r.dispImd, c, r.dispCur);
+      case "toDoer": return units(r.toDoer, c);
+      case "toTreasury": return units(r.toTreasury, c);
+      case "toNft": return units(r.toNft, c);
+      case "winBond": return "+ " + bond(r.winImd, c, r.winCur);
+      case "nftBond": return bond(r.nftImd, c, r.nftCur);
+      case "stay": return "open";
       default: return "";
     }
   }
 
-  // Every receipt splits into up to three lines: Put in (own money contributed, gray), Back (own money
-  // returned, gray — never green, it's not a gain), Profit/Loss (net result from someone else's money, green/red).
-  function plain(text) { return { text: text, cls: "" }; }
-  function putIn(text) { return { text: "Put in: " + text, cls: "" }; }
-  function backLine(text) { return { text: "Back: " + text, cls: "" }; }
-  function profit(text) { return { text: "Profit: " + text, cls: "pos" }; }
-  function loss(text) { return { text: "Loss: − " + text, cls: "neg" }; }
-  function note(label, text) { return { text: label + ": " + text, cls: "" }; }
-
-  function doerPutInText(r) { // bond is always staked; the large-dare swarm check fee is a flat prepaid cost, never returned either way
-    var t = fmtImdUsd(r.doerBond) + " bond";
-    if (r.large) t += " + " + fmtImdUsd(r.checkFeeImd) + " swarm check";
-    return t;
-  }
-
-  function authorLines(scenario, r, cur) {
-    var putInText = fmtCur(r.usd, cur) + " reward + " + fmtEth(r.authorFeeEth) + " fee";
-    if (scenario === "fake") return [putIn(putInText), note("Still locked", "dare reopens for the next doer")];
-    return [putIn(putInText), note("Got", "the dare done")];
-  }
-  function swarmReceipt(r) { return r.large ? { label: "$IMD swarm", lines: [profit(fmtImdUsd(r.checkFeeImd) + " check fee")] } : null; }
+  // Receipts: Put in / Back in gray (own money), Profit / Loss in color (someone else's money).
+  function putIn(t) { return { text: "Put in: " + t, cls: "" }; }
+  function backLine(t) { return { text: "Back: " + t, cls: "" }; }
+  function profit(t) { return { text: "Profit: " + t, cls: "pos" }; }
+  function loss(t) { return { text: "Loss: − " + t, cls: "neg" }; }
+  function note(l, t) { return { text: l + ": " + t, cls: "" }; }
 
   function buildReceipts(scenario, r) {
-    var cur = r.currency;
-    var out = [{ label: "Author", lines: authorLines(scenario, r, cur) }];
+    var c = r.cur;
+    var doerBond = bond(r.doerImd, c, r.doerCur), dispBond = bond(r.dispImd, c, r.dispCur);
+    var out = [{ label: "Author", lines: [putIn(withUsd(r.R, c) + " reward"),
+      scenario === "fake" ? note("Still locked", "the dare stays open") : note("Got", "the dare done")] }];
     if (scenario === "none") {
-      out.push({ label: "Doer", lines: [putIn(doerPutInText(r)), backLine(fmtImdUsd(r.doerBondBack)), profit(fmtCur(r.doerUsd, cur) + " reward")] });
-      var sw = swarmReceipt(r); if (sw) out.push(sw);
-      out.push({ label: "Treasury", lines: [profit(fmtCur(r.treasuryUsd, cur) + " fee + " + fmtEth(r.authorFeeEth) + " author fee")] });
+      out.push({ label: "Doer", lines: [putIn(doerBond + " bond"), backLine(doerBond), profit(withUsd(r.toDoer, c))] });
+      out.push({ label: "Treasury", lines: [profit(withUsd(r.toTreasury, c) + " fee")] });
     } else if (scenario === "doerwin") {
-      out.push({ label: "Doer", lines: [putIn(doerPutInText(r)), backLine(fmtImdUsd(r.doerBond)), profit(fmtCur(r.doerUsd, cur) + " reward + " + fmtImdUsd(r.winnerShare) + " (half the disputer's bond)")] });
-      out.push({ label: "Disputer", lines: [putIn(fmtImdUsd(r.disputeBond)), loss(fmtImdUsd(r.disputerLostBond))] });
-      out.push({ label: "NFT holders", lines: [profit(fmtCur(r.toVotersUsd, cur) + " fee cut + " + fmtImdUsd(r.votersBondCut) + " (half the disputer's bond)")] });
-      var sw2 = swarmReceipt(r); if (sw2) out.push(sw2);
-      out.push({ label: "Treasury", lines: [profit(fmtCur(r.treasuryUsd, cur) + " fee + " + fmtEth(r.authorFeeEth) + " author fee")] });
-    } else { // fake
-      out.push({ label: "Contract", lines: [plain(fmtCur(r.rewardStaysUsd, cur) + " back in the pot, dare reopens")] });
-      out.push({ label: "Doer", lines: [putIn(doerPutInText(r)), loss(fmtImdUsd(r.doerLostBond))] });
-      out.push({ label: "Disputer", lines: [putIn(fmtImdUsd(r.disputeBond)), backLine(fmtImdUsd(r.disputeBond)), profit(fmtImdUsd(r.disputerReward) + " (half the doer's bond)")] });
-      out.push({ label: "NFT holders", lines: [profit(fmtImdUsd(r.votersBondCut) + " (half the doer's bond)")] });
-      var sw3 = swarmReceipt(r); if (sw3) out.push(sw3);
-      out.push({ label: "Treasury", lines: [profit(fmtEth(r.authorFeeEth) + " author fee")] });
+      out.push({ label: "Doer", lines: [putIn(doerBond + " bond"), backLine(doerBond), profit(withUsd(r.toDoer, c) + " + " + bond(r.winImd, c, r.winCur))] });
+      out.push({ label: "Disputer", lines: [putIn(dispBond + " bond"), loss(dispBond)] });
+      out.push({ label: "NFT voters", lines: [profit(withUsd(r.toNft, c) + " + " + bond(r.nftImd, c, r.nftCur))] });
+      out.push({ label: "Treasury", lines: [profit(withUsd(r.toTreasury, c) + " fee")] });
+    } else {
+      out.push({ label: "Doer", lines: [putIn(doerBond + " bond"), loss(doerBond)] });
+      out.push({ label: "Disputer", lines: [putIn(dispBond + " bond"), backLine(dispBond), profit(bond(r.winImd, c, r.winCur))] });
+      out.push({ label: "NFT voters", lines: [profit(bond(r.nftImd, c, r.nftCur))] });
     }
     return out;
   }
@@ -223,7 +182,7 @@
   var slider = document.getElementById("calc-slider");
   var currencySelect = document.getElementById("calc-currency");
   var quickBtns = Array.prototype.slice.call(document.querySelectorAll(".calc-quick button"));
-  var flagsBox = document.getElementById("calc-flags");
+  var unitsLine = document.getElementById("calc-units");
   var tabs = Array.prototype.slice.call(document.querySelectorAll(".calc-tab"));
   var playBtn = document.getElementById("calc-play");
   var chip = document.getElementById("calc-chip");
@@ -238,35 +197,65 @@
   var state = { usd: 100, currency: "USDC", scenario: "none", stepIndex: 0 };
   var playTimer = null;
 
-  function pct(idx) { return ((idx + 0.5) / ORDER.length * 100) + "%"; }
+  var row = document.getElementById("calc-row");
+  var path = document.getElementById("calc-path");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function flyChip(fromRole, toRole, label) {
-    if (!fromRole || !toRole) { chip.classList.remove("show", "flying"); return; }
+  function pct(idx) { return (idx + 0.5) / ORDER.length; }
+  function dockVar() { // --dock is a calc(); measure it through a probe width
+    var probe = document.createElement("i");
+    probe.style.cssText = "position:absolute;visibility:hidden;width:var(--dock)";
+    row.appendChild(probe);
+    var w = probe.getBoundingClientRect().width;
+    row.removeChild(probe);
+    return w;
+  }
+
+  // The coin parks on the track next to a station: dir -1 = its left side, +1 = its right side.
+  function coinX(idx, dir) { return row.clientWidth * pct(idx) + dir * dockVar(); }
+  function placeCoin(x) {
+    chip.style.left = x + "px";
+    var w = chipLabel.offsetWidth, W = row.clientWidth;
+    var shift = Math.min(Math.max(x - w / 2, 0), W - w) - (x - w / 2); // keep the amount inside the row
+    chipLabel.style.transform = "translateX(calc(-50% + " + shift + "px))";
+  }
+  function lightPath(fromIdx, toIdx) {
+    if (fromIdx === toIdx) { path.classList.remove("show"); return; }
+    var a = Math.min(fromIdx, toIdx), b = Math.max(fromIdx, toIdx), span = ORDER.length - 1;
+    path.style.left = (a / span * 100) + "%";
+    path.style.width = ((b - a) / span * 100) + "%";
+    path.classList.add("show");
+  }
+
+  var holder = { idx: ORDER.indexOf("contract"), dir: -1 };
+  function moveCoin(fromRole, toRole, label) {
     var fromIdx = ORDER.indexOf(fromRole), toIdx = ORDER.indexOf(toRole);
+    var dir = toIdx > fromIdx ? -1 : toIdx < fromIdx ? 1 : holder.idx === toIdx ? holder.dir : -1;
     chipLabel.textContent = label;
-    chip.style.transition = "none";
-    chip.style.left = pct(fromIdx);
     chip.classList.add("show");
-    chip.classList.remove("flying");
-    void chip.offsetWidth; // restart the arc keyframe on every hop, not just the first
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        chip.style.transition = "";
-        chip.style.left = pct(toIdx);
-        chip.classList.add("flying");
-      });
-    });
+    lightPath(fromIdx, toIdx);
+    holder = { idx: toIdx, dir: dir };
+    if (fromIdx === toIdx || reduceMotion) { placeCoin(coinX(toIdx, dir)); return; }
+    chip.style.transition = "none"; chipLabel.style.transition = "none";
+    placeCoin(coinX(fromIdx, -dir)); // start on the sender's side facing the receiver
+    void chip.offsetWidth;
+    chip.style.transition = ""; chipLabel.style.transition = "";
+    placeCoin(coinX(toIdx, dir));
+  }
+  function parkCoin() { // step without a transfer: the coin waits by whoever holds the money
+    chipLabel.textContent = "";
+    chip.classList.add("show");
+    path.classList.remove("show");
+    placeCoin(coinX(holder.idx, holder.dir));
   }
 
   function render() {
     var r = calc(state.usd, state.currency, state.scenario);
-    var steps = buildSteps(state.scenario, r.large);
+    var steps = buildSteps(state.scenario);
     if (state.stepIndex >= steps.length) state.stepIndex = steps.length - 1;
     var cur = steps[state.stepIndex];
 
-    flagsBox.innerHTML = "";
-    if (r.large) flagsBox.appendChild(flagEl("swarm check required"));
-    if (r.flooredDoer) flagsBox.appendChild(flagEl("bond floor: 1 IMD"));
+    unitsLine.textContent = "= " + units(r.R, r.cur) + " · min " + units(MIN[r.cur], r.cur);
 
     var usedRoles = {};
     steps.forEach(function (st) { if (st.from) usedRoles[st.from] = true; if (st.to) usedRoles[st.to] = true; });
@@ -275,13 +264,16 @@
     if (cur.to) activeRoles[cur.to] = true;
     ORDER.forEach(function (role) {
       var el = personaEls[role];
-      var used = !!usedRoles[role];
-      var active = !!activeRoles[role];
+      var used = !!usedRoles[role], active = !!activeRoles[role];
       el.classList.toggle("excluded", !used);
       el.classList.toggle("dim", used && !active);
       el.classList.toggle("active", active);
     });
-    if (cur.chip) flyChip(cur.from, cur.to, chipText(cur.chip, r)); else chip.classList.remove("show");
+    if (cur.chip) moveCoin(cur.from, cur.to, chipText(cur.chip, r));
+    else { // vote / wait steps: the money sits in the contract
+      if (holder.idx !== ORDER.indexOf("contract")) holder = { idx: ORDER.indexOf("contract"), dir: -1 };
+      parkCoin();
+    }
 
     stepsList.innerHTML = "";
     steps.forEach(function (st, i) {
@@ -323,13 +315,6 @@
     quickBtns.forEach(function (b) { b.classList.toggle("active", +b.getAttribute("data-amt") === state.usd); });
   }
 
-  function flagEl(text) {
-    var span = document.createElement("span");
-    span.className = "calc-flag";
-    span.textContent = text;
-    return span;
-  }
-
   function stopPlaying() {
     if (playTimer) { clearInterval(playTimer); playTimer = null; }
     playBtn.setAttribute("aria-pressed", "false");
@@ -339,31 +324,27 @@
     stopPlaying();
     state.stepIndex = 0;
     render();
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      var r = calc(state.usd, state.currency, state.scenario);
-      var steps = buildSteps(state.scenario, r.large);
-      state.stepIndex = steps.length - 1;
+    if (reduceMotion) {
+      state.stepIndex = buildSteps(state.scenario).length - 1;
       render();
       return;
     }
     playBtn.setAttribute("aria-pressed", "true");
     playTimer = setInterval(function () {
-      var r2 = calc(state.usd, state.currency, state.scenario);
-      var steps2 = buildSteps(state.scenario, r2.large);
-      if (state.stepIndex >= steps2.length - 1) { stopPlaying(); return; }
+      if (state.stepIndex >= buildSteps(state.scenario).length - 1) { stopPlaying(); return; }
       state.stepIndex++;
       render();
     }, 1100);
   }
 
+  function minUsd() { return Math.ceil(MIN[state.currency] * PRICE[state.currency]); }
   function setUsd(v) {
-    var min = minUsdFor(state.currency);
     v = Math.round(v);
-    if (v < min) v = Math.ceil(min);
+    if (v < minUsd()) v = minUsd();
     if (v > 1000) v = 1000;
     state.usd = v;
     amountInput.value = v;
-    slider.value = Math.min(v, +slider.max);
+    slider.value = v;
     render();
   }
 
@@ -372,15 +353,11 @@
     if (isFinite(v)) setUsd(v);
   });
   slider.addEventListener("input", function () { setUsd(+slider.value); });
-  quickBtns.forEach(function (b) {
-    b.addEventListener("click", function () { setUsd(+b.getAttribute("data-amt")); });
-  });
+  quickBtns.forEach(function (b) { b.addEventListener("click", function () { setUsd(+b.getAttribute("data-amt")); }); });
   currencySelect.addEventListener("change", function () {
     state.currency = currencySelect.value;
-    var min = minUsdFor(state.currency);
-    slider.min = min;
-    amountInput.min = min;
-    setUsd(Math.max(state.usd, min));
+    slider.min = amountInput.min = minUsd();
+    setUsd(Math.max(state.usd, minUsd()));
   });
   tabs.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -394,6 +371,12 @@
   playBtn.addEventListener("click", function () { if (playTimer) stopPlaying(); else startPlaying(); });
 
   render();
+  window.addEventListener("resize", function () {
+    chip.style.transition = "none"; chipLabel.style.transition = "none";
+    placeCoin(coinX(holder.idx, holder.dir));
+    void chip.offsetWidth;
+    chip.style.transition = ""; chipLabel.style.transition = "";
+  });
 
   if ("IntersectionObserver" in window) {
     var played = false;
