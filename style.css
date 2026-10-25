@@ -75,7 +75,10 @@ b { font-weight: 700; }
 .hero {
   position: relative; max-width: var(--max); margin: 0 auto;
   padding: clamp(20px, 4vh, 48px) var(--pad) clamp(28px, 5vh, 64px);
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(24px, 5vw, 80px);
+  --hero-gap: clamp(24px, 5vw, 80px);
+  /* phone width is explicit: the text column keeps at least 460px, the phone never sizes from the video file */
+  --phone-w: min(calc(clamp(520px, 100svh - 150px, 820px) * 9 / 16), calc(min(100vw, var(--max)) - 2 * var(--pad) - var(--hero-gap) - 460px));
+  display: grid; grid-template-columns: minmax(360px, 1fr) var(--phone-w); align-items: center; gap: var(--hero-gap);
   min-height: calc(100svh - 61px);
 }
 .glow {
@@ -83,14 +86,14 @@ b { font-weight: 700; }
   background: radial-gradient(circle, rgba(62, 207, 122, .22), rgba(245, 196, 81, .06) 45%, transparent 70%);
   filter: blur(20px); pointer-events: none; z-index: 0;
 }
-.hero-copy { position: relative; z-index: 2; }
+.hero-copy { position: relative; z-index: 2; container-type: inline-size; }
 .chip {
   display: inline-flex; align-items: center; gap: 8px; margin-bottom: 22px;
   font: 500 13px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--neon);
   padding: 8px 12px; border-radius: 999px; background: rgba(62, 207, 122, .08); border: 1px solid rgba(62, 207, 122, .3);
 }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; animation: pulse 1.8s ease-in-out infinite; }
-h1 { font-weight: 700; letter-spacing: -.035em; line-height: .94; font-size: clamp(40px, 7.2vw, 118px); }
+h1 { font-weight: 700; letter-spacing: -.035em; line-height: .94; font-size: clamp(40px, 7.2vw, 118px); font-size: clamp(36px, min(7.2vw, 14.5cqi), 118px); }
 h1 span { display: block; }
 h1 .l2 {
   background: linear-gradient(100deg, var(--gold-hi), var(--gold) 45%, var(--neon) 110%);
@@ -124,13 +127,13 @@ h1 .l2 {
 .pills a.pill-link:hover { color: var(--neon); }
 
 /* video stage */
-.stage { position: relative; z-index: 1; justify-self: center; }
+.stage { position: relative; z-index: 1; justify-self: center; width: var(--phone-w); }
 .ambient {
   position: absolute; inset: -12% -30%; width: 160%; height: 124%; object-fit: cover;
   filter: blur(70px) saturate(1.4); opacity: .45; pointer-events: none; z-index: -1;
 }
 .phone {
-  position: relative; height: min(calc(100svh - 150px), 820px); min-height: 520px; aspect-ratio: 9 / 16;
+  position: relative; width: var(--phone-w); height: auto; aspect-ratio: 9 / 16;
   border-radius: 34px; overflow: hidden; background: #000;
   border: 1px solid rgba(255, 255, 255, .14);
   box-shadow: 0 0 0 8px rgba(255, 255, 255, .03), 0 40px 120px -30px rgba(62, 207, 122, .55), 0 0 80px -20px rgba(245, 196, 81, .35);
@@ -162,9 +165,9 @@ h1 .l2 {
   content: ""; position: absolute; left: 7px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
   border-radius: 50%; background: var(--toad-dark);
 }
-.t1 { left: -70px; top: 16%; transform: rotate(-12deg); animation: float 6s ease-in-out infinite; }
-.t2 { right: -64px; top: 44%; transform: rotate(9deg); animation: float 7s ease-in-out -2s infinite; }
-.t3 { left: -52px; bottom: 12%; transform: rotate(6deg); animation: float 6.5s ease-in-out -4s infinite; }
+.t1 { left: max(-70px, calc(8px - var(--hero-gap))); top: 16%; transform: rotate(-12deg); animation: float 6s ease-in-out infinite; }
+.t2 { right: -64px; right: max(-64px, calc(12px - var(--pad) - max(0px, (100vw - var(--max)) / 2))); top: 44%; transform: rotate(9deg); animation: float 7s ease-in-out -2s infinite; }
+.t3 { left: max(-52px, calc(8px - var(--hero-gap))); bottom: 12%; transform: rotate(6deg); animation: float 6.5s ease-in-out -4s infinite; }
 
 /* ---------- ticker ---------- */
 .ticker {
@@ -436,7 +439,7 @@ section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(56px,
 
 /* ---------- tablet ---------- */
 @media (max-width: 1080px) {
-  .t1 { left: -40px; } .t2 { right: -36px; } .t3 { left: -30px; }
+  .t1 { left: max(-40px, calc(8px - var(--hero-gap))); } .t2 { right: -36px; } .t3 { left: max(-30px, calc(8px - var(--hero-gap))); }
   .reel { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -505,7 +508,7 @@ section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(56px,
 }
 .bar-app svg { width: 15px; height: 15px; }
 .bar-app:hover { transform: translateY(-1px); box-shadow: 0 8px 26px -8px rgba(62, 207, 122, .8); }
-.cta-4 { display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); }
+.cta-4 { display: grid; grid-template-columns: repeat(2, max-content); }
 .cta-4 .btn { justify-content: center; }
 .final .cta-4 { justify-content: center; }
 .pills .live { color: var(--neon); border-color: rgba(62, 207, 122, .45); background: rgba(13, 42, 26, .7); }
@@ -679,6 +682,37 @@ h3 { margin: 0; }
   .sw-list a { grid-column: 3; grid-row: 2; }
 }
 
+/* ---------- narrow desktop / tablet: hero in one column, as on the phone ---------- */
+@media (min-width: 761px) and (max-width: 920px) {
+  .hero { grid-template-columns: 1fr; gap: 0; min-height: 0; max-width: 640px; padding-top: 24px; padding-bottom: 16px; }
+  .hero-copy { display: contents; }
+  .chip { order: 0; justify-self: start; }
+  h1 { order: 1; font-size: clamp(44px, 7.4vw, 64px); line-height: .96; margin-bottom: 18px; }
+  .stage { order: 2; width: 100%; }
+  .phone { width: min(100%, calc((100svh - 190px) * 9 / 16)); min-width: 300px; margin: 0 auto; }
+  .lead { order: 3; margin-top: 24px; }
+  .hero .cta { order: 4; margin-top: 22px; }
+  .hero .cta-4 { grid-template-columns: 1fr 1fr; }
+  .pills { order: 5; margin-top: 22px; }
+  .glow { width: 100vw; right: -10%; }
+  .t1 { left: -10px; top: 18%; }
+  .t2 { right: -10px; }
+  .t3 { left: -10px; bottom: 14%; }
+}
+
+@media (min-width: 921px) and (max-height: 680px) {
+  .hero {
+    padding-top: 10px; padding-bottom: 14px;
+    --phone-w: min(calc(max(300px, 100svh - 100px) * 9 / 16), calc(min(100vw, var(--max)) - 2 * var(--pad) - var(--hero-gap) - 460px));
+  }
+  h1 { font-size: clamp(36px, min(7.2vw, 14.5cqi, 11.5svh), 118px); }
+  .lead { margin-top: 12px; }
+  .hero .cta { margin-top: 18px; }
+}
+@media (max-width: 359px) {
+  h1 { font-size: 9.2vw; }
+  .hero .cta-4 .btn { font-size: 13px; gap: 4px; padding: 0 4px; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
