@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="all">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; media-src 'self'; style-src 'self'; font-src 'self'; script-src 'self'; connect-src 'self' https://ethereum-rpc.publicnode.com https://gateway.tenderly.co https://eth.drpc.org; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>moneycanbuy.fun · everyone has a price</title>
-<meta name="description" content="Paid dares on Ethereum, judged by NFT holders and the $IMD swarm. Everyone has a price. Name yours.">
+<meta name="description" content="Put money on a dare. Anyone can do it on camera. The contract pays when it's done.">
 <meta name="theme-color" content="#000000">
 <meta property="og:type" content="website">
 <meta property="og:title" content="moneycanbuy.fun · everyone has a price">
-<meta property="og:description" content="Post a dare. Do a dare. Get paid.">
+<meta property="og:description" content="Put money on a dare. Anyone can do it on camera. The contract pays when it's done.">
 <meta property="og:image" content="assets/img/og-1200x630.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@moneycanbuy_fun">
@@ -19,75 +19,139 @@
 <link rel="apple-touch-icon" href="assets/img/avatar-400.png">
 <link rel="preload" href="assets/fonts/quicksand-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="v2.css">
 </head>
+
 <body>
 
 <header class="bar">
   <a class="logo" href="#top" aria-label="moneycanbuy.fun"><img src="assets/img/wordmark.png" alt="moneycanbuy.fun" width="1100" height="231"></a>
   <nav class="bar-links">
-    <a class="icon-btn" href="https://x.com/moneycanbuy_fun" target="_blank" rel="noopener noreferrer" aria-label="Follow on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg></a>
-    <a class="icon-btn" href="https://t.me/moneycanbuyfun" target="_blank" rel="noopener noreferrer" aria-label="Telegram channel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 4.2 18.4 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4 1.1Z"/></svg></a>
-    <a class="icon-btn" href="https://t.me/moneycanbuy_fun" target="_blank" rel="noopener noreferrer" aria-label="Telegram chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 6.5a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Z"/></svg></a>
-    <a class="bar-app" href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer">Open app<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h6v2H6v11h11v-5h2v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg></a>
+    <a class="bar-app" href="https://t.me/moneycanbuy_fun_bot/app" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 4.2 18.4 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4 1.1Z"/></svg>Open in Telegram</a>
   </nav>
 </header>
 
 <main id="top">
 
-<section class="hero">
+<section class="hero2">
   <div class="glow" aria-hidden="true"></div>
-  <div class="hero-copy">
-    <p class="chip"><span class="dot"></span>paid dares</p>
-    <h1><span class="l1">everyone has a&nbsp;price.</span><span class="l2">name yours.</span></h1>
-    <p class="lead">Dares for money, judged by NFT holders and the <b>$IMD</b> swarm.</p>
-    <div class="cta cta-4">
-      <a class="btn go" href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h6v2H6v11h11v-5h2v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>Open app</a>
-      <a class="btn ghost" href="https://x.com/moneycanbuy_fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg>Follow on X</a>
-      <a class="btn ghost" href="https://t.me/moneycanbuyfun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 4.2 18.4 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4 1.1Z"/></svg>Telegram channel</a>
-      <a class="btn ghost" href="https://t.me/moneycanbuy_fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 6.5a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Z"/></svg>Telegram chat</a>
+  <div class="h2-copy">
+    <h1><span class="l1">Everyone has a&nbsp;price.</span><span class="l2">Name yours.</span></h1>
+    <p class="sub">Put money on a dare. Anyone can do it on camera. The contract pays when it's done.</p>
+    <div class="cta2">
+      <a class="btn go" href="https://t.me/moneycanbuy_fun_bot/app" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 4.2 18.4 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4 1.1Z"/></svg>Open in Telegram</a>
+      <a class="btn ghost" href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer">Browse dares</a>
     </div>
-    <ul class="pills">
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4-6.3 6.3Z"/></svg>Audited by the $IMD swarm</li>
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v2h4v3a5 5 0 0 1-4.6 5A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 7.6 13 5 5 0 0 1 3 8V5h4V3Zm0 4H5v1a3 3 0 0 0 2 2.8V7Zm10 0v3.8A3 3 0 0 0 19 8V7h-2Z"/></svg>Built for the IMD hackathon</li>
-      <li class="live"><span class="dot"></span>Live on Ethereum</li>
-      <li><a class="pill-link" href="#credits"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4-6.3 6.3Z"/></svg>Logo by the swarm</a></li>
-    </ul>
+    <p class="liveline" id="liveline" aria-live="polite"><span class="dot"></span><span class="txt">Reading the contract…</span></p>
   </div>
-
-  <div class="stage">
-    <img class="ambient" src="assets/video/poster.jpg" alt="" aria-hidden="true">
+  <div class="stage2">
     <div class="phone">
-      <video id="promo" autoplay muted loop playsinline preload="auto" poster="assets/video/poster.jpg" width="1080" height="1920" aria-label="moneycanbuy.fun promo, 30 seconds">
+      <video id="promo" autoplay muted loop playsinline preload="metadata" poster="assets/video/poster.jpg" width="1080" height="1920" aria-label="moneycanbuy.fun promo, 30 seconds">
         <source src="assets/video/promo.mp4" type="video/mp4">
       </video>
       <button class="sound" id="sound" type="button" aria-pressed="false"><svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3Zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4-2.7-2.7Z"/></svg><svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3Zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4ZM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6Z"/></svg><span>Sound</span></button>
     </div>
-    <span class="tag t1">$50</span>
-    <span class="tag t2">$75</span>
-    <span class="tag t3">$100</span>
   </div>
 </section>
 
-<div class="ticker" aria-hidden="true">
-  <div class="track">
-    <span>post a dare</span><i>$</i><span>do a dare</span><i>$</i><span>get paid</span><i>$</i><span>name your price</span><i>$</i>
-    <span>post a dare</span><i>$</i><span>do a dare</span><i>$</i><span>get paid</span><i>$</i><span>name your price</span><i>$</i>
-  </div>
-</div>
-
-<section class="dares reveal" aria-label="Example dares">
+<section class="blk live" aria-label="Live right now" id="live">
   <div class="sec-head">
-    <h2>What's your price?</h2>
-    <span class="mini">examples</span>
+    <h2>Live right now.</h2>
+    <a class="more-link" data-live-count href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer">See all →</a>
   </div>
-  <div class="reel">
-    <figure><img src="assets/img/dare1.jpg" alt="Cups with $IMD written on them" width="720" height="900" loading="lazy"><figcaption><span>Write $IMD on every cup</span><b>$50</b></figcaption></figure>
-    <figure><img src="assets/img/dare2.jpg" alt="Someone in a toad head ordering at a burger counter" width="720" height="900" loading="lazy"><figcaption><span>Order a meal in the toad head</span><b>$75</b></figcaption></figure>
-    <figure><img src="assets/img/dare3.jpg" alt="A check made out to the swarm, stamped paid" width="720" height="900" loading="lazy"><figcaption><span>Cash a check for the swarm</span><b>$100</b></figcaption></figure>
-    <figure><img src="assets/img/dare4.jpg" alt="A woman with milk on her face" width="720" height="900" loading="lazy"><figcaption><span>Pour milk on your head</span><b>$50</b></figcaption></figure>
+  <div class="dgrid" id="live-grid">
+    <article class="dcard sk"><div class="dcover"></div><div class="dbody"><h3 class="dtitle">&nbsp;</h3></div></article>
+    <article class="dcard sk"><div class="dcover"></div><div class="dbody"><h3 class="dtitle">&nbsp;</h3></div></article>
+    <article class="dcard sk"><div class="dcover"></div><div class="dbody"><h3 class="dtitle">&nbsp;</h3></div></article>
+  </div>
+  <a class="dcard post-own" id="post-own" href="https://t.me/moneycanbuy_fun_bot/app" target="_blank" rel="noopener noreferrer">
+    <b>Your dare here.</b>
+    <span>Lock the money. Anyone can take it. You only pay if it's done.</span>
+    <span class="btn ghost">Post a dare</span>
+  </a>
+</section>
+
+<section class="blk sides" aria-label="Pick your side" id="sides">
+  <div class="sec-head"><h2>Pick your side.</h2></div>
+  <div class="tabs" role="tablist" aria-label="Pick your side">
+    <button type="button" role="tab" id="tab-do" aria-controls="pane-do" aria-selected="true">Do</button>
+    <button type="button" role="tab" id="tab-post" aria-controls="pane-post" aria-selected="false" tabindex="-1">Post</button>
+    <button type="button" role="tab" id="tab-tip" aria-controls="pane-tip" aria-selected="false" tabindex="-1">Tip</button>
+    <button type="button" role="tab" id="tab-predict" aria-controls="pane-predict" aria-selected="false" tabindex="-1">Predict</button>
+    <button type="button" role="tab" id="tab-judge" aria-controls="pane-judge" aria-selected="false" tabindex="-1">Judge</button>
+  </div>
+  <div class="pane" role="tabpanel" id="pane-do" aria-labelledby="tab-do">
+    <h3>Do dares</h3>
+    <p>Pick a dare. Film it. Get paid.</p>
+    <p class="aside">Your chat's worst ideas, now with money behind them.</p>
+  </div>
+  <div class="pane" role="tabpanel" id="pane-post" aria-labelledby="tab-post" hidden>
+    <h3>Post a dare</h3>
+    <p>Want to see something happen? Lock the money. Anyone can take it. You only pay if it's done.</p>
+  </div>
+  <div class="pane" role="tabpanel" id="pane-tip" aria-labelledby="tab-tip" hidden>
+    <h3>Tip a dare</h3>
+    <p>Too cheap? Anyone can add money to any dare and make it bigger.</p>
+  </div>
+  <div class="pane" role="tabpanel" id="pane-predict" aria-labelledby="tab-predict" hidden>
+    <h3>Predict</h3>
+    <p>Think they won't? Call it with $YOLO.</p>
+  </div>
+  <div class="pane" role="tabpanel" id="pane-judge" aria-labelledby="tab-judge" hidden>
+    <h3>Judge</h3>
+    <p>Hold an identity.md NFT? Vote on disputes and earn a cut.</p>
   </div>
 </section>
 
+<section class="blk how2" aria-label="How it works" id="how-it-works">
+  <div class="sec-head"><h2>How it works.</h2></div>
+  <ol class="steps3">
+    <li><span class="n">1</span><b>Pick a dare</b></li>
+    <li><span class="n">2</span><b>Do it on camera</b></li>
+    <li><span class="n">3</span><b>Get paid in 24h</b><span class="k">if nobody disputes</span></li>
+  </ol>
+  <p class="note">Fake proof? Anyone can dispute it, and the money stays in the dare.</p>
+</section>
+
+<section class="blk proof" aria-label="Proof it works" id="proof">
+  <div class="sec-head"><h2>Proof it works.</h2><span class="mini">last payouts</span></div>
+  <ol class="payouts" id="payouts">
+    <li class="sk">&nbsp;</li><li class="sk">&nbsp;</li><li class="sk">&nbsp;</li>
+  </ol>
+  <p class="pay-empty">The first payouts land here, straight from the contract.</p>
+</section>
+
+<section class="blk trust2" aria-label="Why trust it" id="trust">
+  <div class="sec-head"><h2>Why trust it.</h2></div>
+  <ul class="logos">
+    <li><i class="lg">Ξ</i><b>Ethereum</b><span>The money sits in a smart contract, not with us.</span></li>
+    <li><i class="lg">{ }</i><b>Open source</b><span>Code on <a href="https://github.com/sergey-mavr-agent/moneycanbuy-site" target="_blank" rel="noopener noreferrer">GitHub</a>.</span></li>
+    <li><i class="lg">◎</i><b>IMD swarm</b><span>Built, audited and judged by an AI agent swarm.</span></li>
+    <li><i class="lg">P</i><b>Privy</b><span>Log in with Telegram or email, wallet made for you, no seed phrase.</span></li>
+    <li><i class="lg">✈</i><b>Telegram Mini App</b><span>The whole app inside Telegram.</span></li>
+    <li><i class="lg">⬡</i><b>IPFS</b><span>No server to shut down.</span></li>
+    <li><i class="lg">U</i><b>Uniswap v4</b><span>$YOLO trades on Uniswap, liquidity locked forever.</span></li>
+  </ul>
+</section>
+
+<section class="blk ai" aria-label="Built by AI" id="built">
+  <p class="big2">No office. No team of 50.</p>
+  <p class="sub">An AI swarm wrote, audited and deployed this protocol.</p>
+  <a class="more-link" href="#credits" data-open-details>See the swarm's jobs →</a>
+</section>
+
+<section class="blk faq" aria-label="FAQ" id="faq">
+  <div class="sec-head"><h2>FAQ.</h2></div>
+  <details><summary>Do I need crypto?</summary><p>No. Log in with Telegram or email; the app makes you a wallet, no seed phrase.</p></details>
+  <details><summary>When do I get paid?</summary><p>24h after your proof if nobody disputes.</p></details>
+  <details><summary>What if someone fakes it?</summary><p>Anyone can dispute. NFT holders vote, the AI swarm has the final say.</p></details>
+  <details><summary>Can anyone run off with the money?</summary><p>No. It's locked in the contract until the dare is done or expires.</p></details>
+  <details><summary>What is $YOLO?</summary><p>The token of moneycanbuy: use it for rewards, predictions and stake bonuses.</p></details>
+</section>
+
+<details class="deep" id="details">
+  <summary><span>Details</span><span class="mini">bonds, voting, tokenomics, calculator</span></summary>
+  <div class="deep-body">
 <section class="judge reveal" aria-label="Who judges">
   <div class="sec-head">
     <h2>Optimistic by default.</h2>
@@ -410,50 +474,24 @@
   </details>
   <p class="lead">Jobs are paid in IMD from <a href="https://etherscan.io/address/0x3c587Eff6c96eAcF7E3dcC2CFf6416161386E48C" target="_blank" rel="noopener noreferrer">0x3c58…E48C</a> on the <a href="https://imd.fun" target="_blank" rel="noopener noreferrer">imd.fun</a> protocol. IMD made the $YOLO token logo for free.</p>
 </section>
-
-<section class="trust reveal" aria-label="Status">
-  <div class="tile">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4-6.3 6.3Z"/></svg>
-    <b class="big">16</b>
-    <span>audits by the $IMD swarm</span>
   </div>
-  <div class="tile">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v2h4v3a5 5 0 0 1-4.6 5A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 7.6 13 5 5 0 0 1 3 8V5h4V3Zm0 4H5v1a3 3 0 0 0 2 2.8V7Zm10 0v3.8A3 3 0 0 0 19 8V7h-2Z"/></svg>
-    <b class="big">IMD</b>
-    <span>built for the hackathon</span>
-  </div>
-  <div class="tile live">
-    <span class="tile-dot" aria-hidden="true"><span class="dot"></span></span>
-    <b class="big">live</b>
-    <span>on Ethereum mainnet</span>
-  </div>
-</section>
-
-<section class="final reveal">
-  <img class="toad" src="assets/img/toad-640.png" alt="The moneycanbuy.fun toad" width="640" height="640" loading="lazy">
-  <h2>name your price.</h2>
-  <div class="cta cta-4">
-    <a class="btn go" href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.4l-8.3 8.3-1.4-1.4L17.6 5H14V3ZM5 5h6v2H6v11h11v-5h2v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>Open app</a>
-    <a class="btn ghost" href="https://x.com/moneycanbuy_fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg>Follow on X</a>
-    <a class="btn ghost" href="https://t.me/moneycanbuyfun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 4.2 18.4 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.5-7.1c.9-.3 1.6.2 1.4 1.1Z"/></svg>Telegram channel</a>
-    <a class="btn ghost" href="https://t.me/moneycanbuy_fun" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 6.5a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Zm5 0a1.5 1.5 0 1 0 0 .01Z"/></svg>Telegram chat</a>
-  </div>
-  <p class="warn">The only $YOLO: <a href="https://etherscan.io/token/0x49E55A87AA4bB0d2fd58fDCf1A31c9612DE015dc" target="_blank" rel="noopener noreferrer">0x49E55A87AA4bB0d2fd58fDCf1A31c9612DE015dc</a>. Any other address is not ours.</p>
-</section>
+</details>
 
 </main>
 
-<footer class="foot">
+<footer class="foot2">
   <img src="assets/img/wordmark.png" alt="moneycanbuy.fun" width="1100" height="231" loading="lazy">
   <nav>
     <a href="https://x.com/moneycanbuy_fun" target="_blank" rel="noopener noreferrer">X</a>
-    <a href="https://moneycanbuyfun.sites.imd.fun" target="_blank" rel="noopener noreferrer">App</a>
-    <a href="https://t.me/moneycanbuyfun" target="_blank" rel="noopener noreferrer">Channel</a>
-    <a href="https://t.me/moneycanbuy_fun" target="_blank" rel="noopener noreferrer">Chat</a>
-    <a href="https://github.com/sergey-mavr-agent/moneycanbuy.fun" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="https://t.me/moneycanbuyfun" target="_blank" rel="noopener noreferrer"><span class="tg">Telegram </span>channel</a>
+    <a href="https://t.me/moneycanbuy_fun" target="_blank" rel="noopener noreferrer"><span class="tg">Telegram </span>chat</a>
+    <a href="#details" data-open-details>Details</a>
   </nav>
+  <p class="warn">The only $YOLO: <a href="https://etherscan.io/token/0x49E55A87AA4bB0d2fd58fDCf1A31c9612DE015dc" target="_blank" rel="noopener noreferrer" title="0x49E55A87AA4bB0d2fd58fDCf1A31c9612DE015dc">0x49E5…15dc</a> <button type="button" class="copy" data-copy="0x49E55A87AA4bB0d2fd58fDCf1A31c9612DE015dc">Copy</button></p>
 </footer>
 
 <script src="main.js"></script>
+<script src="v2.js"></script>
+<script src="live.js"></script>
 </body>
 </html>
