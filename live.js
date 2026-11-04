@@ -151,7 +151,7 @@
   function decodeTask(id, h) {
     return {
       id: id, author: addr(h, 0), deadline: Number(word(h, 1)), paramsVersion: Number(word(h, 2)), status: Number(word(h, 3)),
-      currency: addr(h, 4), createdAt: Number(word(h, 12)), pot: word(h, 13)
+      currency: addr(h, 4), activeSub: Number(word(h, 8)), createdAt: Number(word(h, 12)), pot: word(h, 13)
     };
   }
   function decodeSub(id, h) {
@@ -285,10 +285,12 @@
     live.forEach(function (t) {
       var m = st.meta[t.id] || {};
       t.title = m.title || ""; t.cover = coverUrl(m.cover); t.usd = usdOf(st.px, t.currency, t.pot);
+      // an open dare with a proof under judging (dispute window, NFT vote, appeal): still live, nobody else can win it now
+      t.review = t.activeSub !== 0;
     });
     var waiting = live.reduce(function (a, t) { return a + t.usd; }, 0);
     // a dare without its title and condition is left out too: the stop words cannot be checked on it
-    var picks = live.filter(function (t) { return !stopped(st.meta[t.id]) && (!isPromo(t) || [6, 7].indexOf(st.meta[t.id].category) < 0); }).slice().sort(function (a, b) { return (b.cover ? 1 : 0) - (a.cover ? 1 : 0) || b.usd - a.usd; }).slice(0, 6);
+    var picks = live.filter(function (t) { return !stopped(st.meta[t.id]) && (!isPromo(t) || [6, 7].indexOf(st.meta[t.id].category) < 0); }).slice().sort(function (a, b) { return (a.review ? 1 : 0) - (b.review ? 1 : 0) || (b.cover ? 1 : 0) - (a.cover ? 1 : 0) || b.usd - a.usd; }).slice(0, 6);
     var payouts = st.subs.filter(function (s) { return s.phase === 8 && s.outcome === 1 && !tasks[s.taskId].hidden; })
       .map(function (s) {
         var t = tasks[s.taskId];
@@ -355,6 +357,7 @@
         pic.appendChild(img);
         var price = el("b", "dprice", fmtUsd(t.usd) || fmtToken(t.currency, t.pot));
         pic.appendChild(price);
+        if (t.review) { card.classList.add("inreview"); pic.appendChild(el("span", "dreview", "Proof in review")); }
         card.appendChild(pic);
         var body = el("div", "dbody");
         body.appendChild(el("h3", "dtitle", t.title || "Dare #" + t.id));
@@ -362,7 +365,7 @@
         meta.appendChild(el("span", "", fmtToken(t.currency, t.pot)));
         meta.appendChild(el("span", "", span(t.deadline - s.now) + " left"));
         body.appendChild(meta);
-        var go = el("a", "btn go dgo", "Do it");
+        var go = t.review ? el("a", "btn ghost dgo", "See proof →") : el("a", "btn go dgo", "Do it");
         go.href = CFG.web + "/#/task/" + t.id;
         body.appendChild(go);
         card.appendChild(body);

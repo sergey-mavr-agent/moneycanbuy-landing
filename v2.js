@@ -1,26 +1,6 @@
-/* the side tabs, links that open Details, the $YOLO address copy button */
+/* links that open Details, the $YOLO address copy button */
 (function () {
   "use strict";
-  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs [role="tab"]'));
-  function pick(t, focus) {
-    tabs.forEach(function (b) {
-      var on = b === t;
-      b.setAttribute("aria-selected", on ? "true" : "false");
-      b.tabIndex = on ? 0 : -1;
-      var pane = document.getElementById(b.getAttribute("aria-controls"));
-      if (pane) pane.hidden = !on;
-    });
-    if (focus) t.focus();
-  }
-  tabs.forEach(function (b, i) {
-    b.addEventListener("click", function () { pick(b); });
-    b.addEventListener("keydown", function (e) {
-      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-      e.preventDefault();
-      pick(tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length], true);
-    });
-  });
-
   var deep = document.getElementById("details");
   Array.prototype.forEach.call(document.querySelectorAll("[data-open-details]"), function (a) {
     a.addEventListener("click", function (e) {
