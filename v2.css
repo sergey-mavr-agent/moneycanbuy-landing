@@ -79,18 +79,55 @@
 .payouts.empty { display: none; }
 .payouts.empty + .pay-empty { display: block; padding: 18px; border: 1px dashed var(--line-hi); border-radius: 14px; }
 
-/* trust */
-.logos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.logos li { display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; row-gap: 2px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
-.logos .lg { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font: 700 20px/1 var(--sans); font-style: normal; background: rgba(62, 207, 122, .12); color: var(--neon); }
-.logos b { font-size: 17px; }
-.logos span { color: var(--muted); font-size: 14px; line-height: 1.35; }
+/* trust: 7 cards, every mark centred in the same 56px tile on top, tile and title on one left line in every card; the short last row is centred */
+.logos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; --cols: 4; }
+.logos li { flex: 0 0 calc((100% - (var(--cols) - 1) * 12px) / var(--cols)); min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
+.logos .lg { flex: none; margin-bottom: 12px; width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-style: normal; background: #000; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.logos .lg svg { width: 40px; height: 40px; display: block; }
+.logos li.imd .lg svg { width: 34px; height: 34px; }
+.logos li.privy .lg { background: #f7f7f5; }
+.logos li.privy .lg svg { width: 32px; height: 32px; }
+.logos b { font-size: 17px; line-height: 1.3; white-space: nowrap; }
+.logos span { color: var(--muted); font-size: 14px; line-height: 1.4; }
 
 /* built by AI */
 .ai { text-align: center; }
 .ai .big2 { font-size: clamp(30px, 4.4vw, 60px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
 .ai .sub { margin: 12px auto 18px; color: var(--muted); font-size: clamp(17px, 1.6vw, 22px); max-width: 30em; }
 .ai .more-link { margin: 0; }
+
+/* done line above the trust block: its height is kept while it loads and after a failed read (no jump) */
+.donestat { max-width: var(--max); margin: clamp(40px, 7vh, 88px) auto 0; padding: 0 var(--pad); min-height: 32px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; font: 700 clamp(17px, 1.8vw, 24px)/32px var(--sans); }
+.donestat .n, .donestat .usd { white-space: nowrap; }
+.donestat .usd { color: var(--gold); }
+.donestat .sep { color: var(--muted); font-style: normal; }
+.donestat .sk { width: min(100%, 360px); height: 22px; border-radius: 999px; background: linear-gradient(90deg, #0d150f, #142018, #0d150f); background-size: 200% 100%; animation: sk 1.4s infinite linear; }
+.donestat:not(.ok) > :not(.sk), .donestat.ok > .sk, .donestat.err > .sk { display: none; }
+.donestat.err { visibility: hidden; }
+.donestat + .trust2 { padding-top: 14px; }
+
+/* for projects & creators */
+.pc .sec-head h2 { white-space: nowrap; }
+.pc2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.pcard { display: flex; flex-direction: column; gap: 12px; padding: clamp(20px, 3vw, 36px); border: 1px solid var(--line); border-radius: 22px; background: var(--card); min-width: 0; }
+.pcard .kick { font: 700 13px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--neon); }
+.pcard h3 { margin: 0; font-size: clamp(24px, 2.4vw, 34px); line-height: 1.1; letter-spacing: -.02em; white-space: nowrap; }
+.pcard p { font-size: clamp(16px, 1.4vw, 19px); color: var(--muted); }
+.pcard .btn { align-self: flex-start; margin-top: auto; white-space: nowrap; }
+@media (max-width: 1080px) and (min-width: 761px) {
+  .pcard h3 { font-size: 2.4vw; }
+}
+@media (max-width: 760px) {
+  .pc .sec-head h2 { font-size: min(30px, 7.4vw); }
+  .pc2 { grid-template-columns: 1fr; gap: 12px; }
+  .pcard { padding: 18px 16px; gap: 10px; }
+  .pcard h3 { font-size: min(24px, 5.4vw); }
+  .pcard p { font-size: 16px; }
+  .donestat { font-size: min(17px, 4.6vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donestat .sk { animation: none; }
+}
 
 /* faq */
 .faq details { border-bottom: 1px solid var(--line); }
@@ -120,7 +157,7 @@
 .copy { font: 700 12px/1 var(--sans); color: var(--ink); background: rgba(255, 255, 255, .06); border: 1px solid var(--line-hi); border-radius: 999px; padding: 6px 10px; cursor: pointer; margin-left: 6px; }
 
 @media (max-width: 1080px) {
-  .logos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .logos { --cols: 2; }
 }
 @media (max-width: 760px) {
   .hero2 { grid-template-columns: 1fr; min-height: 0; padding-top: 22px; gap: 26px; }
@@ -149,11 +186,19 @@
   .payouts a { grid-template-columns: auto minmax(0, 1fr) auto; }
   .payouts .pw { grid-column: 3; grid-row: 2; justify-self: end; }
   .payouts .pt { grid-column: 2; }
-  .logos { grid-template-columns: 1fr; }
+  .logos { --cols: 1; gap: 10px; }
+  .logos li { padding: 16px; }
   .tabs button { padding: 10px 14px; font-size: 15px; }
   .foot2 { grid-template-columns: 1fr; }
   .foot2 nav, .foot2 .warn { justify-self: start; }
   .foot2 .warn { white-space: normal; }
+}
+@media (max-width: 600px) {
+  .logos { gap: 8px; }
+  .logos li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 2px 14px; align-content: center; padding: 12px 14px; }
+  .logos .lg { grid-row: 1 / span 2; align-self: center; margin-bottom: 0; }
+  .logos b { grid-column: 2; align-self: end; font-size: 16px; }
+  .logos span { grid-column: 2; align-self: start; font-size: 13.5px; line-height: 1.35; }
 }
 @media (max-width: 359px) {
   .bar-app svg { display: none; }
@@ -178,4 +223,74 @@
 }
 @media (max-width: 359px) {
   .dgrid > .post-own[data-r2] { grid-column: 1 / -1; }
+}
+
+/* layout pass */
+/* the top bar lines up with the content column */
+.bar { padding-left: calc(max(0px, (100% - var(--max)) / 2) + var(--pad)); padding-right: calc(max(0px, (100% - var(--max)) / 2) + var(--pad)); }
+/* footer rule as wide as the content, not the padding box */
+.foot2 { border-top: 0; }
+.foot2::before { content: ""; position: absolute; top: 0; left: var(--pad); right: var(--pad); height: 1px; background: var(--line); }
+/* live line: the dot sits on the first line */
+.liveline .dot { align-self: flex-start; margin-top: .5em; }
+/* tokenomics split: the note sits right under its title in every cell */
+.tk-split li { align-content: start; }
+/* steps: titles take two lines' room so notes and tags line up across the six cards */
+@media (min-width: 1081px) {
+  .step b { min-height: 2.3em; }
+  /* NFT block: pictures left, text right, no empty half */
+  .deep-body .nft { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 40px; align-items: center; }
+  .deep-body .nft .sec-head { grid-column: 1 / -1; }
+  .deep-body .nft .nft-row { grid-row: 2 / 4; margin-bottom: 0; flex-wrap: nowrap; }
+  .deep-body .nft .nft-row img { width: 160px; height: 160px; }
+  .deep-body .nft .lead { margin-top: 0; align-self: end; }
+  .deep-body .nft .link-ext { align-self: start; justify-self: start; margin-top: 14px; }
+}
+.link-ext { margin-top: 12px; }
+@media (max-width: 760px) {
+  /* payouts: title gets the whole first line, amount and time below */
+  .payouts a { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 4px; padding: 12px 14px; }
+  .payouts .pt { grid-column: 2 / 4; }
+  .payouts .pa { grid-column: 2; grid-row: 2; justify-self: start; }
+  .payouts .pw { grid-column: 3; grid-row: 2; }
+  /* calculator receipts one per row, no orphan card */
+  .calc-receipts { grid-template-columns: 1fr; }
+}
+/* swarm jobs: research group and a job still running */
+.sw-research { background: #ec8f5e; }
+.sw-st-executing { color: var(--gold); border-color: rgba(245, 196, 81, .45); }
+/* a long section title on a phone breaks into two even lines, not one word left over */
+.sec-head h2 { text-wrap: balance; }
+/* payouts: the dare number takes the same room in every row, so titles start on one line */
+.payouts .pid { min-width: 2.4em; }
+/* phone: section titles stay on one line down to 320px */
+@media (max-width: 760px) {
+  .sec-head h2 { font-size: min(30px, 7.4vw); }
+  .deep-body .nft .sec-head h2 { font-size: min(30px, 6.1vw); }
+}
+/* calculator on a phone: the currency picker sits on the right edge, as on desktop */
+@media (max-width: 760px) {
+  .calc-amount-row { flex-wrap: nowrap; }
+  #calc-amount { width: auto; flex: 1 1 0; min-width: 3.5em; }
+  #calc-currency { margin-left: auto; flex: none; }
+}
+/* footer on a phone: full "Telegram channel / chat" while it fits in one row */
+@media (max-width: 760px) and (min-width: 380px) {
+  .foot2 nav .tg { display: inline; }
+  .foot2 nav { gap: 16px; }
+}
+/* small mono labels that wrap get line room */
+.bf-node .k { line-height: 1.35; }
+/* Telegram is the secondary way in: a third button on wide screens, a text link on its own line when the row is narrow */
+.cta2 .tgapp svg { width: 18px; height: 18px; }
+.foot2 nav .tgapp { color: var(--muted); }
+@media (max-width: 1080px) {
+  .cta2 { flex-wrap: wrap; }
+  .cta2 .tgapp { flex: 0 0 100%; order: 9; justify-content: flex-start; height: auto; min-height: 0; padding: 4px 0; background: none; border: 0; box-shadow: none; color: var(--muted); font-size: 15px; font-weight: 600; transform: none; }
+  .cta2 .tgapp:hover { background: none; color: var(--ink); transform: none; }
+  .cta2 .tgapp svg { display: inline-block; width: 16px; height: 16px; }
+}
+@media (max-width: 760px) {
+  .foot2 nav { flex-wrap: wrap; }
+  .foot2 nav .tgapp { flex: 0 0 100%; order: 9; }
 }

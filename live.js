@@ -7,7 +7,7 @@
   var CFG = {
     rpcs: ["https://ethereum-rpc.publicnode.com", "https://gateway.tenderly.co/public/mainnet", "https://eth.drpc.org"],
     logRpcs: ["https://gateway.tenderly.co/public/mainnet", "https://eth.drpc.org", "https://ethereum-rpc.publicnode.com"],
-    /* titles, categories and covers of the dares up to a block, copied from their TaskCreated events (they never change);
+    /* titles, categories, covers and conditions of the dares up to a block, copied from their TaskCreated events (they never change);
        only the blocks after it are read from the chain */
     metaFile: "meta.json",
     vault: "0x88c3B0B64e6869C424DAF25ad8eD635180832493",
@@ -31,8 +31,18 @@
     yoloPoolId: "0x4cc70b0ebec0b7678e201b2bbe2e1bc2d8b9845c9750fdf01b91e6c9b8fa9b33",
     ipfs: "https://gateway.pinata.cloud/ipfs/",
     tg: "https://t.me/moneycanbuy_fun_bot/app",
-    web: "https://moneycanbuyfun.sites.imd.fun"
+    web: "https://moneycanbuyfun.sites.imd.fun",
+    /* the cards leave out dares whose title or condition has one of these words (any case, whole word, +s/es/ing) */
+    stop: ["egg", "sauce", "hot", "ice", "underwear", "tattoo", "shave", "eyebrow", "raw", "onion", "mustard", "brine", "mayo",
+      "marshmallow", "push-up", "bucket", "slime", "snap", "cucumber", "lick"]
   };
+  var STOP_RE = new RegExp("\\b(?:" + CFG.stop.map(function (w) {
+    var forms = [w.replace("-", "[- ]?") + "(?:s|es|ing)?"];
+    if (/e$/.test(w)) forms.push(w.slice(0, -1) + "ing"); // shave → shaving
+    if (/[^aeiou][aeiou][bdgmnprt]$/.test(w)) forms.push(w + w.slice(-1) + "ing"); // snap → snapping
+    return forms.join("|");
+  }).join("|") + ")\\b", "i");
+  function stopped(m) { return !m || STOP_RE.test((m.title || "") + "\n" + (m.cond || "")); }
   var SIG = {
     taskCount: "0xb6cb58a5", getTask: "0x1d65e77e", submissionCount: "0x6ec02be9", getSubmission: "0x3e8686cc",
     paramsOf: "0x2fcd90d2", status: "0xf37a526b", slot0: "0x3850c7bd", getSlot0: "0xc815641c",
@@ -158,7 +168,8 @@
       id: Number(BigInt(log.topics[1])),
       title: str(d, Number(word(d, 3))),
       category: Number(word(d, 5)),
-      cover: str(d, Number(word(d, 7)))
+      cover: str(d, Number(word(d, 7))),
+      cond: str(d, Number(word(d, 4)))
     };
   }
 
@@ -276,7 +287,8 @@
       t.title = m.title || ""; t.cover = coverUrl(m.cover); t.usd = usdOf(st.px, t.currency, t.pot);
     });
     var waiting = live.reduce(function (a, t) { return a + t.usd; }, 0);
-    var picks = live.filter(function (t) { return !isPromo(t) || (st.meta[t.id] && [6, 7].indexOf(st.meta[t.id].category) < 0); }).slice().sort(function (a, b) { return (b.cover ? 1 : 0) - (a.cover ? 1 : 0) || b.usd - a.usd; }).slice(0, 6);
+    // a dare without its title and condition is left out too: the stop words cannot be checked on it
+    var picks = live.filter(function (t) { return !stopped(st.meta[t.id]) && (!isPromo(t) || [6, 7].indexOf(st.meta[t.id].category) < 0); }).slice().sort(function (a, b) { return (b.cover ? 1 : 0) - (a.cover ? 1 : 0) || b.usd - a.usd; }).slice(0, 6);
     var payouts = st.subs.filter(function (s) { return s.phase === 8 && s.outcome === 1 && !tasks[s.taskId].hidden; })
       .map(function (s) {
         var t = tasks[s.taskId];
@@ -284,11 +296,13 @@
         var net = s.reward - (s.reward * feeBps) / BigInt(10000);
         var at = Math.max(s.windowEnd, s.voteEnd, s.decidedAt, s.callFrom);
         var m = st.meta[s.taskId] || {};
-        return { taskId: s.taskId, promo: isPromo(t), currency: t.currency, net: net, at: at, title: m.title || "" };
+        return { taskId: s.taskId, promo: isPromo(t), currency: t.currency, net: net, usd: usdOf(st.px, t.currency, net), at: at, title: m.title || "" };
       })
       .sort(function (a, b) { return b.at - a.at; });
     var real = payouts.filter(function (p) { return CFG.mode === "all" || !p.promo; });
-    return { now: now, live: live, waiting: waiting, picks: picks, payouts: real, promoPayouts: payouts.length - real.length };
+    // "N dares done · $X paid to doers": the accepted proofs of the payouts list, the reward net of the fee, today's price
+    var paid = real.reduce(function (a, p) { return a + p.usd; }, 0);
+    return { now: now, live: live, waiting: waiting, picks: picks, payouts: real, promoPayouts: payouts.length - real.length, done: real.length, paid: paid };
   }
 
   /* ---------- render ---------- */
@@ -308,10 +322,20 @@
       txt.textContent = "";
       parts.forEach(function (t, i) {
         var sp = el("span", "", t);
-        if (i) { txt.appendChild(document.createTextNode(" ")); sp.insertBefore(el("i", "sep", "· "), sp.firstChild); }
+        if (i < parts.length - 1) sp.appendChild(el("i", "sep", " ·"));
+        if (i) txt.appendChild(document.createTextNode(" "));
         txt.appendChild(sp);
       });
       line.classList.add("ok");
+    }
+    var done = document.getElementById("donestat");
+    if (done) {
+      // a snapshot without the totals, or nothing paid yet: the line stays hidden
+      if (s.done > 0 && typeof s.paid === "number" && s.paid >= 1) {
+        done.querySelector(".n").textContent = s.done + (s.done === 1 ? " dare done" : " dares done");
+        done.querySelector(".usd").textContent = fmtUsd(s.paid) + " paid to doers";
+        done.classList.add("ok");
+      } else done.classList.add("err");
     }
     var all = document.querySelectorAll("[data-live-count]");
     Array.prototype.forEach.call(all, function (a) { a.textContent = "See all " + s.live.length + " →"; });
@@ -322,7 +346,7 @@
       s.picks.forEach(function (t) {
         var card = el("article", "dcard");
         var pic = el("a", "dcover");
-        pic.href = CFG.web + "/#/task/" + t.id; pic.target = "_blank"; pic.rel = "noopener noreferrer";
+        pic.href = CFG.web + "/#/task/" + t.id;
         pic.setAttribute("aria-label", (t.title || "Dare #" + t.id) + " in the app");
         var img = el("img");
         img.alt = ""; img.loading = "lazy"; img.decoding = "async"; img.referrerPolicy = "no-referrer";
@@ -339,7 +363,7 @@
         meta.appendChild(el("span", "", span(t.deadline - s.now) + " left"));
         body.appendChild(meta);
         var go = el("a", "btn go dgo", "Do it");
-        go.href = CFG.tg + "?startapp=d_" + t.id + "_v1"; go.target = "_blank"; go.rel = "noopener noreferrer";
+        go.href = CFG.web + "/#/task/" + t.id;
         body.appendChild(go);
         card.appendChild(body);
         grid.appendChild(card);
@@ -376,10 +400,12 @@
   function fail() {
     var line = document.getElementById("liveline");
     if (line) { line.querySelector(".txt").textContent = "Live on Ethereum"; line.classList.add("ok"); }
+    var done = document.getElementById("donestat");
+    if (done) done.classList.add("err");
     document.documentElement.classList.add("live-fail");
   }
 
-  root.MCB_LIVE = { load: load, summarize: summarize, CFG: CFG, getLogs: getLogs, decodeCreated: decodeCreated, SIG: SIG };
+  root.MCB_LIVE = { load: load, summarize: summarize, render: render, stopped: stopped, CFG: CFG, getLogs: getLogs, decodeCreated: decodeCreated, SIG: SIG };
   if (typeof document !== "undefined") {
     // a page can read a same-origin snapshot of the summary instead
     var snap = document.documentElement.getAttribute("data-snapshot");

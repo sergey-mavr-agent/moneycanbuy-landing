@@ -353,8 +353,8 @@ section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(56px,
 .node { border-radius: 22px; padding: 22px 24px; background: var(--card); border: 1px solid var(--line-hi); }
 .node .k { display: block; font: 500 12px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 .node b { font-size: clamp(20px, 2vw, 28px); letter-spacing: -.02em; line-height: 1.15; }
-.proof { position: relative; }
-.proof::after { /* connector to the two branches */
+.node.proof { position: relative; }
+.node.proof::after { /* connector to the two branches */
   content: ""; position: absolute; left: 100%; top: 50%; width: 48px; height: 2px; background: var(--line-hi);
 }
 .branches { position: relative; display: grid; gap: 14px; padding-left: 96px; }
@@ -489,7 +489,7 @@ section:not(.hero) { max-width: var(--max); margin: 0 auto; padding: clamp(56px,
   .reel::-webkit-scrollbar { display: none; }
   .reel figure { flex: 0 0 72%; scroll-snap-align: center; }
   .flow { grid-template-columns: 1fr; }
-  .proof::after { left: 32px; top: 100%; width: 2px; height: 28px; }
+  .node.proof::after { left: 32px; top: 100%; width: 2px; height: 28px; }
   .branches { padding: 28px 0 0 0; }
   .branches::before { left: 32px; top: 0; bottom: auto; height: 28px; width: 2px; }
   .branches .node::before { display: none; }
@@ -601,7 +601,7 @@ h3 { margin: 0; }
 /* ---------- made by the swarm ---------- */
 .sw-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 3px; margin-bottom: 12px; }
 .sw-seg { display: block; height: 100%; }
-.sw-seg.sw-launch { flex: 7 1 0; } .sw-seg.sw-audit { flex: 16 1 0; } .sw-seg.sw-site { flex: 2 1 0; } .sw-seg.sw-brand { flex: 26 1 0; }
+.sw-seg.sw-launch { flex: 10 1 0; } .sw-seg.sw-audit { flex: 15 1 0; } .sw-seg.sw-site { flex: 28 1 0; } .sw-seg.sw-brand { flex: 28 1 0; } .sw-seg.sw-research { flex: 2 1 0; }
 .sw-launch { background: var(--neon); } .sw-audit { background: var(--gold); } .sw-site { background: #3a8fd6; } .sw-brand { background: #b98cf0; }
 .sw-legend { list-style: none; margin: 0 0 22px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .sw-legend li { display: inline-flex; align-items: center; gap: 7px; }
