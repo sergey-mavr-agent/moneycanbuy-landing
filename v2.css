@@ -323,11 +323,6 @@
 }
 /* the Tokenomics link lands with the title below the sticky bar */
 #token { scroll-margin-top: 72px; }
-/* hero: AI agents pay humans; the old slogan as a second line */
-.h2-copy { container-type: inline-size; }
-.hero2 h1.h1-ag { font-size: min(104px, 12.2cqi); }
-.hero2 h1.h1-ag span { white-space: nowrap; }
-.hero2 .slogan { margin-top: 10px; font: 500 min(15px, 4.8cqi)/1.4 var(--mono); color: var(--muted); }
 /* three steps right under the first screen */
 .agents { display: flex; align-items: center; gap: 18px; }
 .aflow { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: 34px; flex: 1 1 auto; min-width: 0; }
