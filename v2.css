@@ -323,3 +323,36 @@
 }
 /* the Tokenomics link lands with the title below the sticky bar */
 #token { scroll-margin-top: 72px; }
+/* hero: AI agents pay humans; the old slogan as a second line */
+.h2-copy { container-type: inline-size; }
+.hero2 h1.h1-ag { font-size: min(104px, 12.2cqi); }
+.hero2 h1.h1-ag span { white-space: nowrap; }
+.hero2 .slogan { margin-top: 10px; font: 500 min(15px, 4.8cqi)/1.4 var(--mono); color: var(--muted); }
+/* three steps right under the first screen */
+.agents { display: flex; align-items: center; gap: 18px; }
+.aflow { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: 34px; flex: 1 1 auto; min-width: 0; }
+.aflow li { position: relative; flex: 1 1 0; display: flex; align-items: center; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); min-width: 0; }
+.aflow li + li::before { content: "\2192"; position: absolute; left: -26px; top: 50%; transform: translateY(-50%); width: 18px; text-align: center; color: var(--neon); font-weight: 700; font-size: 18px; line-height: 1; }
+.aflow svg { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--neon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.aflow b { font-size: 17px; line-height: 1.25; white-space: nowrap; }
+.agents > .btn { flex: none; white-space: nowrap; }
+@media (max-width: 1080px) {
+  .agents { flex-direction: column; align-items: stretch; }
+  .agents > .btn { align-self: flex-start; }
+}
+@media (max-width: 760px) {
+  .agents { gap: 14px; }
+  .aflow { flex-direction: column; gap: 26px; }
+  .aflow li { padding: 12px 14px; }
+  .aflow li + li::before { content: "\2193"; left: 50%; top: -22px; transform: translateX(-50%); }
+  .aflow b { font-size: min(16px, 4.8vw); white-space: normal; }
+}
+/* Who it's for: four cards, 2 x 2 */
+@media (min-width: 761px) {
+  .pc4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pc4 .pcard:first-child { grid-column: auto; }
+  .pc4 .pcard h3 { font-size: clamp(22px, 2.2vw, 30px); }
+}
+.agents { flex-wrap: wrap; }
+.agents > .ag-h { flex: 1 0 100%; margin: 0; }
+@media (max-width: 1080px) { .agents > .ag-h { flex: none; } }
