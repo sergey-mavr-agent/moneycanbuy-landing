@@ -355,3 +355,10 @@
 .sides5 li { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 10px; align-content: start; }
 .sides5 li > span { grid-column: 1 / -1; }
 .sides5 svg { width: 22px; height: 22px; align-self: center; fill: none; stroke: var(--neon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* live block without the chain: the snapshot's time next to the title; with no numbers at all one line to the app, no placeholders */
+.live-asof { font: 500 12px/1.4 var(--mono); color: var(--muted); white-space: nowrap; }
+.live-off { display: none; margin: 0; padding: 18px; border: 1px dashed var(--line-hi); border-radius: 14px; font-weight: 700; }
+.live-off a { color: var(--neon); text-decoration: none; }
+.live-off a:hover { text-decoration: underline; }
+html.live-fail .live-off { display: block; }
+html.live-fail #live-grid, html.live-fail .payouts .sk, html.live-fail .donestat .sk, html.live-fail #proof { display: none; }

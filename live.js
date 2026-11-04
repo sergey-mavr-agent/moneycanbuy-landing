@@ -10,6 +10,9 @@
     /* titles, categories, covers and conditions of the dares up to a block, copied from their TaskCreated events (they never change);
        only the blocks after it are read from the chain */
     metaFile: "meta.json",
+    /* the same summary saved when the site was built: shown when the nodes do not answer in time */
+    snapFile: "live-snapshot.json",
+    snapAfter: 12000,
     vault: "0x88c3B0B64e6869C424DAF25ad8eD635180832493",
     /* HiddenList: the site's hide list (the app hides the same dares) */
     hiddenList: "0xf88c5e714802563CE4A380F95Fef5b5204972Fe6",
@@ -336,8 +339,8 @@
       if (s.done > 0 && typeof s.paid === "number" && s.paid >= 1) {
         done.querySelector(".n").textContent = s.done + (s.done === 1 ? " dare done" : " dares done");
         done.querySelector(".usd").textContent = fmtUsd(s.paid) + " paid to doers";
-        done.classList.add("ok");
-      } else done.classList.add("err");
+        done.classList.remove("err"); done.classList.add("ok");
+      } else { done.classList.remove("ok"); done.classList.add("err"); }
     }
     var all = document.querySelectorAll("[data-live-count]");
     Array.prototype.forEach.call(all, function (a) { a.textContent = "See all " + s.live.length + " →"; });
@@ -398,6 +401,9 @@
       });
       pay.classList.toggle("empty", s.payouts.length === 0);
     }
+    var off = document.getElementById("live-off");
+    if (off) off.parentNode.removeChild(off);
+    document.documentElement.classList.remove("live-fail");
     document.documentElement.classList.add("live-ok");
   }
   function fail() {
@@ -405,21 +411,57 @@
     if (line) { line.querySelector(".txt").textContent = "Live on Ethereum"; line.classList.add("ok"); }
     var done = document.getElementById("donestat");
     if (done) done.classList.add("err");
+    // no numbers at all: one line to the app instead of the empty cards
+    var grid = document.getElementById("live-grid"), all = document.querySelector("#live [data-live-count]");
+    if (grid && !document.getElementById("live-off")) {
+      var p = el("p", "live-off"), a = el("a", "", "Live dares are in the app →");
+      p.id = "live-off";
+      a.href = all ? all.href : CFG.web; a.target = "_blank"; a.rel = "noopener noreferrer";
+      p.appendChild(a);
+      grid.parentNode.insertBefore(p, grid);
+    }
     document.documentElement.classList.add("live-fail");
+  }
+  /* "as of 4 Nov, 21:42 UTC" next to the title while the cards come from the snapshot; null takes it away */
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function asOf(at) {
+    var old = document.getElementById("live-asof");
+    if (old) old.parentNode.removeChild(old);
+    var d = at ? new Date(at) : null, head = document.querySelector("#live .sec-head");
+    if (!d || isNaN(d) || !head) return;
+    var two = function (n) { return (n < 10 ? "0" : "") + n; };
+    var tag = el("span", "live-asof", "as of " + d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + ", " + two(d.getUTCHours()) + ":" + two(d.getUTCMinutes()) + " UTC");
+    tag.id = "live-asof";
+    var h2 = head.querySelector("h2");
+    head.insertBefore(tag, h2 ? h2.nextSibling : head.firstChild);
   }
 
   root.MCB_LIVE = { load: load, summarize: summarize, render: render, stopped: stopped, CFG: CFG, getLogs: getLogs, decodeCreated: decodeCreated, SIG: SIG };
   if (typeof document !== "undefined") {
     // a page can read a same-origin snapshot of the summary instead
     var snap = document.documentElement.getAttribute("data-snapshot");
-    var fromSnap = function () {
-      return fetch(snap).then(function (r) { return r.json(); }).then(function (s) {
+    var fromSnap = function (url) {
+      return fetch(url, { credentials: "omit" }).then(function (r) { if (!r.ok) throw new Error("snapshot"); return r.json(); }).then(function (s) {
         s.picks.forEach(function (t) { t.pot = BigInt(t.pot); });
         s.payouts.forEach(function (p) { p.net = BigInt(p.net); });
         return s;
       });
     };
-    var start = function () { (snap ? fromSnap() : load()).then(render).catch(fail); };
+    /* the chain first; on an error or after snapAfter ms the snapshot of the build with its time, and when the chain
+       answers later anyway its numbers replace the snapshot */
+    var start = function () {
+      if (snap) { fromSnap(snap).then(render).catch(fail); return; }
+      var fresh = false;
+      var chain = load().then(function (s) { fresh = true; render(s); asOf(null); });
+      var late = new Promise(function (_, no) { setTimeout(function () { no(new Error("slow")); }, CFG.snapAfter); });
+      Promise.race([chain, late]).catch(function () {
+        if (fresh) return;
+        return fromSnap(CFG.snapFile).then(function (s) {
+          if (fresh) return;
+          render(s); asOf(s.at || s.now * 1000);
+        }).catch(function () { if (!fresh) fail(); });
+      });
+    };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
   }
 })(typeof window !== "undefined" ? window : globalThis);
