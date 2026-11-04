@@ -351,3 +351,7 @@
 .agents { flex-wrap: wrap; }
 .agents > .ag-h { flex: 1 0 100%; margin: 0; }
 @media (max-width: 1080px) { .agents > .ag-h { flex: none; } }
+/* Pick your side: icon left of the title, same as .aflow icons */
+.sides5 li { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 10px; align-content: start; }
+.sides5 li > span { grid-column: 1 / -1; }
+.sides5 svg { width: 22px; height: 22px; align-self: center; fill: none; stroke: var(--neon); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
